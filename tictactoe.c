@@ -3,12 +3,16 @@
 #define USERNAMELIMIT 30
 #define ROWLIMIT 5
 #define COLUMNLIMIT 5
+#define MAXPOSITION 9
+#define MINPOSITION 1
 
 void greet(void);
 void getUserName(char *, char *);
 void printBoard(char [][COLUMNLIMIT]);
 int updateBoard(int, char [][COLUMNLIMIT], char);
-int checkStatus(char [][COLUMNLIMIT]);
+int checkStatus(char [ROWLIMIT][COLUMNLIMIT]);
+int checkForDraw(const char [ROWLIMIT][COLUMNLIMIT]);
+
 
 int main(){
     char player_1[USERNAMELIMIT], player_2[USERNAMELIMIT];
@@ -23,7 +27,7 @@ int main(){
     printf("%s takes %c\n%s takes %c\n", player_1, x, player_2, o);
     printBoard(board);
     int turn = 0;
-    while(checkStatus(board)){
+    do{
         int position = 0;
         
         char piece;
@@ -42,14 +46,13 @@ int main(){
             piece = o;
         }
 
-        if(position > 9 || position < 1){
+        if(position > MAXPOSITION || position < MINPOSITION){
             printf("Enter a valid position\n");
             turn--;
             printBoard(board);
             continue;
         }
-        int r = updateBoard(position, board, piece);
-        if(!r){
+        if(!updateBoard(position, board, piece)){
             printf("Already marked. Choose another\n");
             turn--;
             printBoard(board);
@@ -57,6 +60,18 @@ int main(){
         }
         printf("\n");
         printBoard(board);
+        if(checkStatus(board) && checkForDraw(board) == 1){
+            printf("Game Drawn\n");
+            return 0;
+        }
+    }
+    while(checkStatus(board));
+    printf("Game over\n");
+    if(turn % 2){
+        printf("X won\nCongrats %s\n", player_1);
+    }
+    else{
+        printf("O won\nCongrats %s\n", player_2);
     }
     return 0;
 }
@@ -95,6 +110,66 @@ int updateBoard(int position, char board[][COLUMNLIMIT], char piece){
     return 1;
 }
 
-int checkStatus(char board[][COLUMNLIMIT]){
-    return 0;
+int checkStatus(char board[ROWLIMIT][COLUMNLIMIT]){
+    // char board[ROWLIMIT][COLUMNLIMIT] = {{' ', '|', ' ', '|', ' '}, 
+    //                                      {'-', '-', '-', '-', '-'}, 
+    //                                      {' ', '|', ' ', '|', ' '}, 
+    //                                      {'-', '-', '-', '-', '-'}, 
+    //                                      {' ', '|', ' ', '|', ' '}};
+    if(board[0][0] != ' ' && board[0][0] == board[0][2] && board[0][2] == board[0][4]){
+        // printf("1\n");
+        return 0;
+    }
+    else if(board[2][0] !=' ' && board[2][0] == board[2][2] && board[2][2] == board[2][4]){
+        // printf("2\n");
+        return 0;
+    }
+    else if(board[4][0] != ' ' && board[4][0] == board[4][2] && board[4][2] == board[4][4]){
+        // printf("3\n");
+        return 0;
+    }
+    else if(board[0][0] != ' ' && board[0][0] == board[2][0] && board[2][0] == board[4][0]){
+        // printf("4\n");
+        return 0;
+    }
+    else if(board[0][2] != ' ' && board[0][2] == board[2][2] && board[2][2] == board[4][2]){
+        // printf("5\n");
+        return 0;
+    }
+    else if(board[0][4] != ' ' && board[0][4] == board[2][4] && board[2][4] == board[4][4]){
+        // printf("6\n");
+        return 0;
+    }
+    else if(board[0][0] !=' ' && board[0][0] == board[2][2] && board[2][2] == board[4][4]){
+        // printf("7\n");
+        return 0;
+    }
+    else if(board[0][4] != ' ' && board[0][4] == board[2][2] && board[2][2] == board[4][0]){
+        // printf("8\n");
+        return 0;
+    }
+    // else if(checkForDraw(board)){
+    //     // printf("9\n");
+    //     return -1;
+    // }
+    else{
+        return 1;
+    }
+}
+
+int checkForDraw(const char board[ROWLIMIT][COLUMNLIMIT]){
+    int nonEmptyCount = 0;
+    for(int i=0;i<ROWLIMIT;i+=2){
+        for(int j=0;j<COLUMNLIMIT;j+=2){
+            if(board[i][j] != ' '){
+                nonEmptyCount++;
+            }
+        }
+    }
+    if(nonEmptyCount == 9){
+        return 1;
+    }
+    else{
+        return 0;
+    }
 }
